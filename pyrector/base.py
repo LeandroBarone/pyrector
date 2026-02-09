@@ -18,11 +18,11 @@ from dataclasses import dataclass
 
 
 TRGBTuple = tuple[int, int, int]
-TRGBATuple = tuple[int, int, int, int]
+TRGBATuple = tuple[int, int, int, float]
 TColor = TRGBTuple | TRGBATuple | str
 TPercentage = str
 TDim = float | TPercentage | Literal['auto']
-TTextSize = int | str | Literal['xxs', 'xs', 's', 'm', 'l', 'xl', 'xxl']
+TTextSize = int | str | Literal['xxs', 'xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl']
 TTextHorizontalAlign = Literal['left', 'center', 'right']
 TTextVerticalAlign = Literal['top', 'center', 'bottom']
 
@@ -204,7 +204,8 @@ class VisualComponent(TimelineComponent, ABC):
             if isinstance(effect, VisualEffect):
                 effect.component = self
 
-    def color_to_tuple(self, color: TColor, ignore_alpha: bool = False) -> 'TRGBTuple | TRGBATuple':
+    @staticmethod
+    def color_to_tuple(color: TColor, ignore_alpha: bool = False) -> 'TRGBTuple | TRGBATuple':
         if isinstance(color, tuple) and len(color) >= 3:
             return color[:3] if ignore_alpha else color
         color_tuple = ImageColor.getrgb(color)
@@ -298,10 +299,10 @@ class Container(TimelineComponent, ABC):
             self._duration = scene_durations
             return scene_durations
 
-        longest_audio_length = self.find_longest_component_length()
-        if longest_audio_length:
-            self._duration = longest_audio_length
-            return longest_audio_length
+        first_duration = self.find_first_component_with_duration()
+        if first_duration:
+            self._duration = first_duration
+            return first_duration
 
         if self.movie._duration is not None:
             return self.movie._duration
@@ -440,14 +441,16 @@ class Container(TimelineComponent, ABC):
         else:
             return result
 
-    def find_longest_component_length(self) -> float:
-        longest_length = 0
+    def find_first_component_with_duration(self) -> float:
+        if self.relative_duration:
+            return self.relative_duration
         for component in self.components:
             if isinstance(component, Container):
-                longest_length = max(longest_length, component.find_longest_component_length())
+                return component.find_first_component_with_duration()
             elif isinstance(component, TimelineComponent):
-                longest_length = max(longest_length, component.relative_duration)
-        return longest_length
+                if component.relative_duration:
+                    return component.relative_duration
+        return 0
 
     @staticmethod
     def check_next_component_for_fadeins(next_component: Component | None = None) -> float:
@@ -563,7 +566,7 @@ class Scene(Container):
         duration: float | None = None,
         effects: 'Effect | Sequence[Effect]' = (),
         fps: int = 30,
-        bg_color: tuple[int, int, int] = (0, 0, 0),
+        bg_color: TColor = 'black',
     ):
         super().__init__(components, duration=duration, effects=effects)
 
@@ -582,8 +585,9 @@ class Scene(Container):
 
     def build(self, file_path: str = 'output.mp4') -> None:
         self.log(f'building movie {self.width}x{self.height} @ fps={self.fps} length={self.duration}')
+        background_color = VisualComponent.color_to_tuple(self.bg_color)
         movie = CompositeVideoClip([
-            ColorClip(size=(self.width, self.height), duration=self.duration, color=self.bg_color),
+            ColorClip(size=(self.width, self.height), duration=self.duration, color=background_color),
             self.render(self.width, self.height, 0, 0)
         ])
 
@@ -623,7 +627,7 @@ class AnimatedEffect(VisualEffect, ABC):
 
 class GenerativeProvider(ABC):
     @abstractmethod
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, *args, **kwargs) -> str:
         pass
 
     @classmethod
@@ -684,9 +688,23 @@ class GenAudio(GenFunction):
 class GenMusic(GenFunction):
     required_provider = GenerativeMusicProvider
 
+    def __init__(self, prompt: str, duration: float = 30):
+        super().__init__(prompt)
+        self.duration = duration
+
+    def generate(self, provider: GenerativeProvider) -> str:
+        return provider.generate(self.prompt, self.duration)
+
 
 class GenVideo(GenFunction):
     required_provider = GenerativeVideoProvider
+
+    def __init__(self, prompt: str, duration: float = 30):
+        super().__init__(prompt)
+        self.duration = duration
+
+    def generate(self, provider: GenerativeProvider) -> str:
+        return provider.generate(self.prompt, self.duration)
 
 
 class GenVoice(GenFunction):

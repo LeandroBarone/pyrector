@@ -1,6 +1,7 @@
 from pyrector.base import (
     TDim,
     TColor,
+    TRGBATuple,
     TPercentage,
     TTextSize,
     TTextHorizontalAlign,
@@ -49,12 +50,19 @@ class ColorBlock(VisualComponent):
         super().__init__(width, height, left, top, start_time, end_time, duration, effects, parent)
         self.color = color
 
-    def render(self, width: int, height: int, left: int, top: int) -> 'ColorClip':
+    def render(self, width: int, height: int, left: int, top: int) -> 'ColorClip | CompositeVideoClip':
         self.log(f'rendering color block {width}x{height} @ ({left}, {top}) color={self.color}')
         color = self.color_to_tuple(self.color)
 
+        block = ColorClip(size=(width, height), color=color)
+
+        if len(color) == 4 and color[3] < 1:
+            alpha = color[3]
+            mask = ImageClip(np.full((height, width), alpha), is_mask=True)
+            block.mask = mask
+
         return (
-            ColorClip(size=(width, height), color=color)
+            block
             .with_start(self.start_time)
             .with_end(self.end_time)
             .with_effects(self.build_effects())
@@ -154,6 +162,14 @@ class VideoFile(VisualComponent):
             .with_end(self.end_time)
             .with_effects(self.build_effects())
         )
+
+    @property
+    def duration(self) -> float:
+        return self.relative_duration or self.video.duration
+
+    @property
+    def relative_duration(self) -> float:
+        return super().relative_duration or self.video.duration
 
 
 class TextBlock(Container):
@@ -298,6 +314,8 @@ class Text(VisualComponent):
             return round(base_font_size + step_up * 2)
         elif font_size == 'xxl':
             return round(base_font_size + step_up * 3)
+        elif font_size == 'xxxl':
+            return round(base_font_size + step_up * 4)
         else:
             raise ValueError(f'Invalid text size: {font_size}')
 
@@ -341,6 +359,7 @@ class Text(VisualComponent):
                 method='caption',
                 **self.font_style_kwargs,
             )
+            .with_position((left, top))
             .with_start(self.start_time)
             .with_end(self.end_time)
             .with_duration(self.duration)
@@ -361,7 +380,7 @@ class Text(VisualComponent):
             text=self.text,
             size=size,
             margin=margin,
-            method='label',
+            # method='label',
             **styles,
             text_align='center',
             horizontal_align='center',

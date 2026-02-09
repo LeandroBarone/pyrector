@@ -113,7 +113,7 @@ class GoogleImageProvider(WithGoogleClient, GenerativeImageProvider):
 
 
 class GoogleVideoProvider(WithGoogleClient, GenerativeVideoProvider):
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, duration: float = 4) -> str:
         file_path = self.cache_file(prompt, f'{self.cache_dir}/video_', '.mp4')
         if path.exists(file_path):
             return file_path
@@ -126,7 +126,7 @@ class GoogleVideoProvider(WithGoogleClient, GenerativeVideoProvider):
             prompt=prompt,
             config=self.genai.types.GenerateVideosConfig(
                 aspect_ratio='16:9',  # TODO: derive aspect ratio
-                duration_seconds=8,
+                duration_seconds=int(duration),
                 resolution='720p',
             ),
         )
@@ -192,7 +192,7 @@ class ElevenLabsVoiceProvider(WithElevenLabsClient, GenerativeVoiceProvider):
 
 
 class ElevenLabsMusicProvider(WithElevenLabsClient, GenerativeMusicProvider):
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, duration: float = 30) -> str:
         file_path = self.cache_file(prompt, f'{self.cache_dir}/music_', '.mp3')
         if path.exists(file_path):
             return file_path
@@ -203,7 +203,7 @@ class ElevenLabsMusicProvider(WithElevenLabsClient, GenerativeMusicProvider):
         response = self.client.music.compose(
             prompt=prompt,
             model_id='music_v1',
-            music_length_ms=30_000,
+            music_length_ms=int(duration * 1000),
         )
 
         response_bytes = b''.join(response)
