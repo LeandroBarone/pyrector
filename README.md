@@ -2,13 +2,19 @@
 
 A thin, opinionated Python library for building short-form videos (social ads, promos, stories) via a declarative API. Define a tree of visual and audio components under a root `Movie`; layout and timing are handled with sensible defaults. Generative media (text, image, audio, video) plugs in via `Gen*` types and configurable providers.
 
+# Changelog
+
+## 0.1.0 (2026-02-08)
+
+- Initial release.
+
 # Features
 
-- **Declarative composition** — Build videos as a tree of containers and components (boxes, rows, columns, scenes).
-- **Layout and timing** — Position and size with percentages or pixels; control duration and when each element appears.
-- **Generative media** — Use `GenText`, `GenImage`, `GenVideo`, `GenVoice`, `GenAudio`, `GenMusic` with pluggable providers (e.g. Google, ElevenLabs).
-- **Effects** — Fade, slide, and other visual/audio effects applied per component.
-- **One entry point** — Call `movie.build('output.mp4')` to render.
+- **Declarative composition**: Build videos as a tree of containers and components (boxes, rows, columns, scenes).
+- **Layout and timing**: Position and size with percentages or pixels; control duration and when each element appears.
+- **Generative media**: Use `GenText`, `GenImage`, `GenVideo`, `GenVoice`, `GenAudio`, `GenMusic` with pluggable providers (e.g. Google, ElevenLabs).
+- **Effects**: Fade, slide, and other visual/audio effects applied per component.
+- **One entry point**: Call `movie.build('output.mp4')` to render.
 
 # Installation
 
@@ -119,7 +125,7 @@ Movie(
 | **fps** | Frames per second for the output video. |
 | **bg_color** | Background color as RGB tuple `(r, g, b)`. |
 
-**Methods:** `build(file_path: str)` — Renders the movie to the given file path.
+**Methods:** `build(file_path: str)`: Renders the movie to the given file path.
 
 ### Box
 
@@ -411,7 +417,7 @@ Used wherever a path or string is expected (e.g. `ImageFile(image_path=pg.GenIma
 | **Painting** | saturation: float = 1.4, black: float = 0.006 | Painting-style look. |
 | **SlideInTop**, **SlideInBottom**, **SlideInLeft**, **SlideInRight** | duration: float = 1 | Slide in from the given edge. |
 | **SlideOutTop**, **SlideOutBottom**, **SlideOutLeft**, **SlideOutRight** | duration: float = 1 | Slide out toward the given edge. |
-| **TimeMirror** | — | No parameters. |
+| **TimeMirror** | - | No parameters. |
 
 **Audio** (from `pyrector.audio_effects`):
 
@@ -421,6 +427,6 @@ Used wherever a path or string is expected (e.g. `ImageFile(image_path=pg.GenIma
 
 ## Type notes
 
-- **TColor** — RGB tuple `(r, g, b)`, RGBA tuple, or color name/hex string (e.g. `'white'`, `'#333'`).
-- **TDim** — Number (pixels), `'auto'`, or percentage string (e.g. `'50%'`).
-- **TTextSize** — Int (pixels) or size name `'xxs'`…`'xxl'`; names are scaled from movie height.
+- **TColor**: RGB tuple `(r, g, b)`, RGBA tuple, or color name/hex string (e.g. `'white'`, `'#333'`).
+- **TDim**: Number (pixels), `'auto'`, or percentage string (e.g. `'50%'`).
+- **TTextSize**: Int (pixels) or size name `'xxs'`…`'xxl'`; names are scaled from movie height.
