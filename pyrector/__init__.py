@@ -58,8 +58,6 @@ from pyrector.visual_effects import (
 from pyrector.generative_providers import (
     GoogleTextProvider,
     GoogleImageProvider,
-    GoogleAudioProvider,
-    GoogleVideoProvider,
     ElevenLabsVoiceProvider,
     ElevenLabsMusicProvider,
 )
@@ -124,8 +122,6 @@ __all__ = [
     # Generative providers
     'GoogleTextProvider',
     'GoogleImageProvider',
-    'GoogleAudioProvider',
-    'GoogleVideoProvider',
     'ElevenLabsVoiceProvider',
     'ElevenLabsMusicProvider',
 ]

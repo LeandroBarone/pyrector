@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyrector",
-    version="0.1.0",
+    version="0.1.1",
     author="Leandro Barone",
     author_email="web@leandrobarone.com.ar",
     description="A thin, opinionated Python library for building short-form videos.",
