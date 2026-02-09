@@ -2,7 +2,7 @@
 
 A thin, opinionated Python library for building short-form videos (social ads, promos, stories) via a declarative API. Define a tree of visual and audio components under a root `Movie`; layout and timing are handled with sensible defaults. Generative media (text, image, audio, video) plugs in via `Gen*` types and configurable providers.
 
-![pyrector example](https://raw.githubusercontent.com/LeandroBarone/pyrector/main/demo.mp4)
+<video src="https://github.com/user-attachments/assets/31b9680a-5dc5-4b2c-a28f-f298aed5852a"></video>
 
 # Changelog
 
