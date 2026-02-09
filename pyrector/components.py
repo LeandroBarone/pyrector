@@ -123,24 +123,29 @@ class VideoFile(VisualComponent):
         self.video_path = self.resolve_generative_function(video_path)
         self.video = VideoFileClip(self.video_path, audio=False)
 
-    @staticmethod
-    def load_video(video_path: str, width: int, height: int) -> 'VideoFileClip':
-        video = VideoFileClip(video_path, audio=False)
-        vid_w, vid_h = video.size
+    def crop_self(self, width: int, height: int):
+        vid_w, vid_h = self.video.size
         if vid_w == width and vid_h == height:
-            return video
+            return
         scale = max(width / vid_w, height / vid_h)
         new_w = round(vid_w * scale)
         new_h = round(vid_h * scale)
-        x1 = (new_w - width) // 2
-        y1 = (new_h - height) // 2
-        x2 = x1 + width
-        y2 = y1 + height
-        resized_video = video.resized(width=new_w, height=new_h)
-        cropped_video = resized_video.cropped(x1=x1, y1=y1, x2=x2, y2=y2)  # type: ignore
-        return cropped_video  # type: ignore
+        resized_video = self.video.resized(width=new_w, height=new_h)
+        if not isinstance(resized_video, VideoFileClip):
+            raise ValueError(f'Resized video is not a VideoFileClip: {type(resized_video)}')
+        cropped_video = resized_video.cropped(  # type: ignore
+            x_center=new_w // 2,
+            y_center=new_h // 2,
+            width=width,
+            height=height,
+        )
+        if not isinstance(cropped_video, VideoFileClip):
+            raise ValueError(f'Cropped video is not a VideoFileClip: {type(cropped_video)}')
+        self.video = cropped_video
 
     def render(self, width: int, height: int, left: int, top: int) -> 'VideoFileClip':
+        self.log(f'Cropping video {width}x{height} @ ({left}, {top}) path="{self.video_path}"')
+        self.crop_self(width, height)
         self.log(f'rendering video {width}x{height} @ ({left}, {top}) path="{self.video_path}"')
         return (
             self.video

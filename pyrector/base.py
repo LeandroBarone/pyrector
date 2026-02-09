@@ -10,6 +10,7 @@ from moviepy import (
     vfx as MoviepyVFX,
 )
 
+import hashlib
 import logging
 from abc import ABC, abstractmethod
 from typing import Literal, Any, Sequence
@@ -624,6 +625,14 @@ class GenerativeProvider(ABC):
     @abstractmethod
     def generate(self, prompt: str) -> str:
         pass
+
+    @classmethod
+    def cache_file(cls, prompt: str, prefix: str, suffix: str) -> str:
+        if not prompt:
+            raise ValueError('Prompt is required')
+
+        digest = hashlib.sha256(prompt.encode('utf-8')).hexdigest()
+        return f'{prefix}{digest}{suffix}'
 
 
 class GenerativeTextProvider(GenerativeProvider, ABC):
